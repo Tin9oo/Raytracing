@@ -8,8 +8,9 @@
 #define COLOR_WHITE 0xffffffff
 #define COLOR_BLACK 0x00000000
 #define COLOR_RAY 0xffd43b
-#define RAYS_NUMBER 100
-
+#define COLOR_RAY_BLUR 0xbd6800
+#define RAYS_NUMBER 1000
+#define RAY_THICKNESS 1
 struct Circle {
     double x;
     double y;
@@ -27,14 +28,14 @@ void FillCircle(SDL_Surface* surface, struct Circle circle, Uint32 color) {
         for(double y = circle.y - circle.radius; y <= circle.y + circle.radius; y++) {
             double distance_squared = pow(x-circle.x, 2) + pow(y-circle.y, 2);
             if(distance_squared < radius_squared) {
-                SDL_Rect pixel = (SDL_Rect){x, y, 3, 3};
+                SDL_Rect pixel = (SDL_Rect){x, y, 1, 1};
                 SDL_FillRect(surface, &pixel, color);
             }
         }
     }
 }
 
-void FillRays(SDL_Surface* surface, struct Ray rays[RAYS_NUMBER], Uint32 color, struct Circle object) {
+void FillRays(SDL_Surface* surface, struct Ray rays[RAYS_NUMBER], Uint32 color, Uint32 blur_color, struct Circle object) {
     double radius_squared = pow(object.radius, 2);
 
     for(int i = 0; i < RAYS_NUMBER; i++) {
@@ -50,8 +51,13 @@ void FillRays(SDL_Surface* surface, struct Ray rays[RAYS_NUMBER], Uint32 color, 
             x_draw += step * cos(ray.angle);
             y_draw += step * sin(ray.angle);
 
-            SDL_Rect pixel = (SDL_Rect){x_draw, y_draw, 1, 1};
-            SDL_FillRect(surface, &pixel, color);
+            SDL_Rect ray_point = (SDL_Rect){x_draw, y_draw, RAY_THICKNESS, RAY_THICKNESS};
+            
+            double blur_size = 3 * RAY_THICKNESS;
+            SDL_Rect ray_blur = (SDL_Rect){x_draw, y_draw, blur_size, blur_size};
+
+            SDL_FillRect(surface, &ray_blur, blur_color);
+            SDL_FillRect(surface, &ray_point, color);
 
             if(x_draw < 0 || x_draw > WIDTH)
                 end_of_screen = true;
@@ -128,7 +134,7 @@ int main(int argc, char* argv[]) {
         SDL_FillRect(surface, &erase_rect, COLOR_BLACK);
         FillCircle(surface, circle, COLOR_WHITE);
         FillCircle(surface, shadow_circle, COLOR_WHITE);
-        FillRays(surface, rays, COLOR_RAY, shadow_circle);
+        FillRays(surface, rays, COLOR_RAY, COLOR_RAY_BLUR, shadow_circle);
 
         shadow_circle.y += obstacle_speed_y;
         if(shadow_circle.y - shadow_circle.radius < 0)
