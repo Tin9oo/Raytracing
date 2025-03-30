@@ -7,7 +7,7 @@
 #define HEIGHT 600
 #define COLOR_WHITE 0xffffffff
 #define COLOR_BLACK 0x00000000
-#define COLOR_GRAY 0xefefefef
+#define COLOR_RAY 0xffd43b
 #define RAYS_NUMBER 100
 
 struct Circle {
@@ -27,7 +27,7 @@ void FillCircle(SDL_Surface* surface, struct Circle circle, Uint32 color) {
         for(double y = circle.y - circle.radius; y <= circle.y + circle.radius; y++) {
             double distance_squared = pow(x-circle.x, 2) + pow(y-circle.y, 2);
             if(distance_squared < radius_squared) {
-                SDL_Rect pixel = (SDL_Rect){x, y, 1, 1};
+                SDL_Rect pixel = (SDL_Rect){x, y, 3, 3};
                 SDL_FillRect(surface, &pixel, color);
             }
         }
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
         SDL_FillRect(surface, &erase_rect, COLOR_BLACK);
         FillCircle(surface, circle, COLOR_WHITE);
         FillCircle(surface, shadow_circle, COLOR_WHITE);
-        FillRays(surface, rays, COLOR_GRAY, shadow_circle);
+        FillRays(surface, rays, COLOR_RAY, shadow_circle);
 
         shadow_circle.y += obstacle_speed_y;
         if(shadow_circle.y - shadow_circle.radius < 0)
