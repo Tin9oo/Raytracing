@@ -1,14 +1,24 @@
+#include <stdio.h>
+#include <stdbool.h>
+
 #include <SDL2/SDL.h>
 
 #define WIDTH 900
 #define HEIGHT 600
 #define COLOR_WHITE 0xffffffff
 #define COLOR_BLACK 0x00000000
+#define COLOR_GRAY 0xefefefef
+#define RAYS_NUMBER 100
 
 struct Circle {
     double x;
     double y;
     double radius;
+};
+
+struct Ray {
+    double x_start, y_start;
+    double angle;
 };
 
 void FillCircle(SDL_Surface* surface, struct Circle circle, Uint32 color) {
@@ -21,6 +31,48 @@ void FillCircle(SDL_Surface* surface, struct Circle circle, Uint32 color) {
                 SDL_FillRect(surface, &pixel, color);
             }
         }
+    }
+}
+
+void FillRays(SDL_Surface* surface, struct Ray rays[RAYS_NUMBER], Uint32 color, struct Circle object) {
+    double radius_squared = pow(object.radius, 2);
+
+    for(int i = 0; i < RAYS_NUMBER; i++) {
+        struct Ray ray = rays[i];
+
+        bool end_of_screen = false;
+        bool hit_object = false;
+
+        double step = 1;
+        double x_draw = ray.x_start;
+        double y_draw = ray.y_start;
+        while(!end_of_screen && !hit_object) {
+            x_draw += step * cos(ray.angle);
+            y_draw += step * sin(ray.angle);
+
+            SDL_Rect pixel = (SDL_Rect){x_draw, y_draw, 1, 1};
+            SDL_FillRect(surface, &pixel, color);
+
+            if(x_draw < 0 || x_draw > WIDTH)
+                end_of_screen = true;
+            if(y_draw < 0 || y_draw > HEIGHT) 
+                end_of_screen = true;
+            
+            // Does the ray hit an object?
+            double distance_squared = pow(x_draw-object.x, 2) + pow(y_draw-object.y, 2);
+            if(distance_squared < radius_squared) {
+                hit_object = true;
+            }
+        }
+    }
+}
+
+void generate_rays(struct Circle circle, struct Ray rays[RAYS_NUMBER]) {
+    for(int i = 0; i < RAYS_NUMBER; i++) {
+        double angle = ((double) i / RAYS_NUMBER) * 2 * M_PI;
+        struct Ray ray = {circle.x, circle.y, angle};
+        rays[i] = ray;
+        printf("angle: %f\n", angle);
     }
 }
 
@@ -54,6 +106,9 @@ int main(int argc, char* argv[]) {
     struct Circle shadow_circle = {650, 300, 140};
     SDL_Rect erase_rect = {0, 0, WIDTH, HEIGHT};
 
+    struct Ray rays[RAYS_NUMBER];
+    generate_rays(circle, rays);
+
     // 이벤트 루프
     SDL_Event e;
     int quit = 0;
@@ -66,6 +121,7 @@ int main(int argc, char* argv[]) {
             if(e.type == SDL_MOUSEMOTION && e.motion.state != 0) {
                 circle.x = e.motion.x;
                 circle.y = e.motion.y;
+                generate_rays(circle, rays);
             }
         }
 
@@ -74,6 +130,7 @@ int main(int argc, char* argv[]) {
         SDL_FillRect(surface, &erase_rect, COLOR_BLACK);
         FillCircle(surface, circle, COLOR_WHITE);
         FillCircle(surface, shadow_circle, COLOR_WHITE);
+        FillRays(surface, rays, COLOR_GRAY, shadow_circle);
 
         // SDL_Delay(10);
     }
