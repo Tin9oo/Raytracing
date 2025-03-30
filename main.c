@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 
-#define WIDTH 900
+#define WIDTH 1200
 #define HEIGHT 600
 #define COLOR_WHITE 0xffffffff
 #define COLOR_BLACK 0x00000000
@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
     SDL_Rect rect = (SDL_Rect) {200, 200, 200, 200};
     SDL_FillRect(surface, &rect, COLOR_WHITE);
 
-    struct Circle circle = {200, 200, 80};
+    struct Circle circle = {200, 200, 40};
     struct Circle shadow_circle = {650, 300, 140};
     SDL_Rect erase_rect = {0, 0, WIDTH, HEIGHT};
 
