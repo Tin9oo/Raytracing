@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
     struct Ray rays[RAYS_NUMBER];
     generate_rays(circle, rays);
 
-    // 이벤트 루프
+    double obstacle_speed_y = 1;
     SDL_Event e;
     int quit = 0;
     while (!quit) {
@@ -125,14 +125,18 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        SDL_UpdateWindowSurface(window);
-
         SDL_FillRect(surface, &erase_rect, COLOR_BLACK);
         FillCircle(surface, circle, COLOR_WHITE);
         FillCircle(surface, shadow_circle, COLOR_WHITE);
         FillRays(surface, rays, COLOR_GRAY, shadow_circle);
 
-        // SDL_Delay(10);
+        shadow_circle.y += obstacle_speed_y;
+        if(shadow_circle.y - shadow_circle.radius < 0)
+            obstacle_speed_y = obstacle_speed_y * -1;
+        if(shadow_circle.y + shadow_circle.radius > HEIGHT)
+            obstacle_speed_y = obstacle_speed_y * -1;
+
+        SDL_UpdateWindowSurface(window);
     }
 
     // SDL 종료
